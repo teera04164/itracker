@@ -6,11 +6,16 @@
 
 function sheetPost(action, params) {
   const url = DB.config.sheetUrl;
-  if (!url) return;
+  console.log('[sheetPost] action:', action, '| url:', url || '(empty!)');
+  if (!url) { console.warn('[sheetPost] ❌ sheetUrl ว่าง — ไม่ได้ตั้งค่า'); return; }
   try {
     const p = new URLSearchParams(Object.assign({ action }, params));
-    fetch(`${url}?${p}`, { method: 'GET', mode: 'no-cors' }).catch(() => {});
-  } catch (e) {}
+    const fullUrl = `${url}?${p}`;
+    console.log('[sheetPost] 🚀 sending:', fullUrl);
+    fetch(fullUrl, { method: 'GET', mode: 'no-cors' })
+      .then(() => console.log('[sheetPost] ✅ fired (no-cors)'))
+      .catch(e => console.error('[sheetPost] ❌ fetch error:', e));
+  } catch (e) { console.error('[sheetPost] ❌ exception:', e); }
 }
 
 // ---- Items --------------------------------------------------
@@ -49,6 +54,7 @@ async function delFromSheet(id) {
 // ---- Groups -------------------------------------------------
 
 function syncGroupToSheet(group) {
+  console.log('[syncGroupToSheet] 📤 payload:', group);
   sheetPost('addGroup', {
     id:        group.id,
     name:      group.name,

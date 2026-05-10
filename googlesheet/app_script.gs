@@ -60,6 +60,21 @@ function genId() {
   return Utilities.getUuid().replace(/-/g, '').slice(0, 16);
 }
 
+// ---- Debug sheet log ----------------------------------------
+function sheetLog(tag, msg) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let dbg = ss.getSheetByName('Debug');
+    if (!dbg) {
+      dbg = ss.insertSheet('Debug');
+      dbg.appendRow(['Timestamp', 'Tag', 'Message']);
+      dbg.getRange(1,1,1,3).setFontWeight('bold').setBackground('#333').setFontColor('#fff');
+      dbg.setFrozenRows(1);
+    }
+    dbg.appendRow([new Date().toISOString(), tag, String(msg)]);
+  } catch(e) {}
+}
+
 function ok(extra)  { return Object.assign({ success: true },  extra || {}); }
 function err(reason) { return { success: false, reason: reason }; }
 
@@ -73,6 +88,7 @@ function jsonOut(obj) {
 function doGet(e) {
   const p = e.parameter;
   const action = p.action || 'getAll';
+  sheetLog('doGet', 'action=' + action + ' | params=' + JSON.stringify(p));
   try {
     if (action === 'getAll') {
       return jsonOut({ items: readItems(), groups: readGroups(), workspaces: readWorkspaces() });
@@ -90,8 +106,10 @@ function doGet(e) {
     if (action === 'deleteGroup')     return jsonOut(deleteById(getGroupsSheet(), p.id));
     if (action === 'addWorkspace')    return jsonOut(addWorkspace(p));
     if (action === 'deleteWorkspace') return jsonOut(deleteById(getWorkspacesSheet(), p.id));
+    sheetLog('doGet', 'unknown action: ' + action);
     return jsonOut({ error: 'unknown action' });
   } catch (ex) {
+    sheetLog('doGet', 'EXCEPTION: ' + ex.message);
     return jsonOut({ error: ex.message });
   }
 }
@@ -168,18 +186,27 @@ function addItem(p) {
 // ---- Group CRUD ---------------------------------------------
 
 function addGroup(p) {
+  sheetLog('addGroup', 'params: ' + JSON.stringify(p));
   const sheet = getGroupsSheet();
   const col = colMap(sheet);
+  sheetLog('addGroup', 'colMap: ' + JSON.stringify(col));
   const id = p.id || genId();
-  if (findRow(sheet, col['ID'], id) > 0) return err('duplicate id');
+  sheetLog('addGroup', 'id: ' + id);
+  const dupRow = findRow(sheet, col['ID'], id);
+  if (dupRow > 0) {
+    sheetLog('addGroup', 'DUPLICATE at row ' + dupRow);
+    return err('duplicate id');
+  }
   const row = new Array(sheet.getLastColumn()).fill('');
-  row[col['ID']]            = id;
+  row[col['ID']]             = id;
   row[col['ชื่อกลุ่ม']]   = p.name      || '';
   row[col['ไอคอน']]       = p.icon       || '🗂';
   row[col['คำอธิบาย']]    = p.desc       || '';
-  row[col['workspace']]    = p.workspace  || '';
+  row[col['workspace']]     = p.workspace  || '';
   row[col['วันที่บันทึก']] = p.createdAt || new Date().toISOString();
+  sheetLog('addGroup', 'row: ' + JSON.stringify(row));
   sheet.appendRow(row);
+  sheetLog('addGroup', '✅ done, id=' + id);
   return ok({ id: id });
 }
 
