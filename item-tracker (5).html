@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>จัดเก็บของ — บันทึกตำแหน่งสิ่งของ</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --bg: #0f0e17;
+    --surface: #1a1828;
+    --card: #221f35;
+    --accent: #f5a623;
+    --accent2: #e8635a;
+    --text: #fffffe;
+    --muted: #a7a9be;
+    --border: #2e2b45;
+    --success: #6bcb77;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sarabun', 'Noto Sans Thai', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .header-glow {
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(245,166,35,0.15), transparent);
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    border-color: rgba(245,166,35,0.3);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(245,166,35,0.1);
+    transform: translateY(-2px);
+  }
+
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(245,166,35,0.05);
+  }
+
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #e8941a);
+    color: #0f0e17;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(245,166,35,0.4);
+  }
+
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .input-field {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    width: 100%;
+  }
+
+  .input-field:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: rgba(245,166,35,0.05);
+    box-shadow: 0 0 0 3px rgba(245,166,35,0.1);
+  }
+
+  .input-field::placeholder { color: var(--muted); }
+
+  .tag {
+    background: rgba(245,166,35,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(245,166,35,0.3);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .search-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    color: var(--text);
+    font-family: 'Sarabun', sans-serif;
+    font-size: 15px;
+    width: 100%;
+    transition: all 0.2s ease;
+  }
+
+  .search-bar:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(245,166,35,0.1);
+  }
+
+  .item-img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    border-radius: 10px;
+    background: var(--border);
+  }
+
+  .item-img-placeholder {
+    width: 100%;
+    aspect-ratio: 4/3;
+    border-radius: 10px;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+  }
+
+  .delete-btn {
+    background: rgba(232,99,90,0.15);
+    border: 1px solid rgba(232,99,90,0.3);
+    color: var(--accent2);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Sarabun', sans-serif;
+  }
+
+  .delete-btn:hover {
+    background: rgba(232,99,90,0.3);
+    transform: scale(1.05);
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    max-width: 520px;
+    width: 100%;
+    transform: translateY(20px) scale(0.97);
+    transition: transform 0.3s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-overlay.open .modal-box {
+    transform: translateY(0) scale(1);
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #e8941a);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    opacity: 0.5;
+  }
+
+  .stat-pill {
+    background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.2);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 13px;
+    color: var(--accent);
+  }
+
+  .grid-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .item-card { animation: fadeInUp 0.3s ease both; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--card);
+    border: 1px solid var(--success);
+    color: var(--success);
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 100;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(245,166,35,0.3);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .preview-img {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.3);
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .sort-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Sarabun', sans-serif;
+  }
+
+  .sort-btn.active {
+    background: rgba(245,166,35,0.15);
+    border-color: rgba(245,166,35,0.4);
+    color: var(--accent);
+  }
+
+  .location-badge {
+    background: rgba(107,203,119,0.12);
+    border: 1px solid rgba(107,203,119,0.25);
+    color: var(--success);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast">
+  <span>✓</span>
+  <span id="toast-msg">บันทึกสำเร็จ</span>
+</div>
+
+<!-- Main App -->
+<div class="relative z-10 min-h-screen">
+
+  <!-- Header -->
+  <div class="header-glow">
+    <div class="max-w-6xl mx-auto px-6 pt-12 pb-8">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-3xl">📦</span>
+            <h1 class="text-3xl font-bold tracking-tight">จัดเก็บของ</h1>
+          </div>
+          <p class="text-sm" style="color: var(--muted)">บันทึกรูปภาพและตำแหน่งของสิ่งของ — ไม่ต้องหาของทั้งบ้านอีกต่อไป</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="stat-pill" id="item-count">0 ชิ้น</span>
+          <button onclick="loadFromSheet()" title="โหลดข้อมูลจาก Google Sheet" style="background:rgba(107,203,119,0.15); border:1px solid rgba(107,203,119,0.3); color:var(--success); border-radius:10px; padding:10px 16px; cursor:pointer; font-family:'Sarabun',sans-serif; font-size:13px; transition:all 0.2s;" onmouseover="this.style.background='rgba(107,203,119,0.25)'" onmouseout="this.style.background='rgba(107,203,119,0.15)'">
+            🔄 ซิงค์
+          </button>
+          <button class="btn-primary" onclick="openModal()">
+            + เพิ่มของ
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="max-w-6xl mx-auto px-6 py-4">
+    <div class="flex gap-3 flex-wrap items-center">
+      <div class="relative flex-1 min-w-[200px]">
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg" style="color:var(--muted)">🔍</span>
+        <input type="text" class="search-bar" style="padding-left: 44px;" placeholder="ค้นหาชื่อของ หรือ สถานที่..." id="search-input" oninput="renderItems()">
+      </div>
+      <button class="sort-btn active" id="sort-new" onclick="setSort('new')">ล่าสุด</button>
+      <button class="sort-btn" id="sort-old" onclick="setSort('old')">เก่าสุด</button>
+      <button class="sort-btn" id="sort-az" onclick="setSort('az')">ก-ฮ</button>
+    </div>
+  </div>
+
+  <!-- Items Grid -->
+  <div class="max-w-6xl mx-auto px-6 pb-16">
+    <div class="grid-items" id="items-grid"></div>
+    <div class="empty-state hidden" id="empty-state">
+      <div class="text-6xl mb-4">🗃️</div>
+      <p class="text-xl font-semibold mb-2">ยังไม่มีรายการของ</p>
+      <p style="color:var(--muted)" class="text-sm">กด "เพิ่มของ" เพื่อเริ่มบันทึกตำแหน่งสิ่งของ</p>
+    </div>
+  </div>
+</div>
+
+<!-- Add Item Modal -->
+<div class="modal-overlay" id="modal" onclick="closeOnOverlay(event)">
+  <div class="modal-box">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-bold">เพิ่มของใหม่</h2>
+      <button onclick="closeModal()" style="color:var(--muted); background:none; border:none; cursor:pointer; font-size:22px; line-height:1;">✕</button>
+    </div>
+
+    <!-- Image Upload -->
+    <div class="mb-5">
+      <label class="block text-sm font-semibold mb-2" style="color:var(--muted)">รูปภาพของ</label>
+      <div class="upload-zone py-8 px-4 text-center" id="upload-zone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+        <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)">
+        <div id="upload-placeholder">
+          <div class="text-4xl mb-3">📷</div>
+          <p class="font-semibold mb-1">คลิกหรือลากรูปมาวาง</p>
+          <p class="text-xs" style="color:var(--muted)">PNG, JPG, WEBP — อัพโหลดผ่าน Cloudinary</p>
+        </div>
+        <div id="upload-preview" class="hidden">
+          <img id="preview-img" class="preview-img mb-3" src="" alt="preview">
+          <p class="text-xs" style="color:var(--muted)">คลิกเพื่อเปลี่ยนรูป</p>
+        </div>
+      </div>
+      <!-- Progress -->
+      <div class="progress-bar mt-2 hidden" id="upload-progress-wrap">
+        <div class="progress-fill" id="upload-progress" style="width:0%"></div>
+      </div>
+      <p class="text-xs mt-1 hidden" id="upload-status" style="color:var(--accent)"></p>
+    </div>
+
+    <!-- Item Name -->
+    <div class="mb-4">
+      <label class="block text-sm font-semibold mb-2" style="color:var(--muted)">ชื่อของ <span style="color:var(--accent2)">*</span></label>
+      <input type="text" class="input-field" id="item-name" placeholder="เช่น กรรไกรตัดผ้า, ประแจเบอร์ 14..." maxlength="80">
+    </div>
+
+    <!-- Location -->
+    <div class="mb-4">
+      <label class="block text-sm font-semibold mb-2" style="color:var(--muted)">วางไว้ที่ไหน <span style="color:var(--accent2)">*</span></label>
+      <input type="text" class="input-field" id="item-location" placeholder="เช่น ลิ้นชักซ้ายบนโต๊ะทำงาน, ตู้เสื้อผ้าชั้น 2..." maxlength="120">
+    </div>
+
+    <!-- Category Tag -->
+    <div class="mb-6">
+      <label class="block text-sm font-semibold mb-2" style="color:var(--muted)">หมวดหมู่ (ไม่บังคับ)</label>
+      <input type="text" class="input-field" id="item-category" placeholder="เช่น เครื่องมือ, เอกสาร, ของใช้ในครัว..." maxlength="40">
+    </div>
+
+    <!-- Note -->
+    <div class="mb-6">
+      <label class="block text-sm font-semibold mb-2" style="color:var(--muted)">หมายเหตุเพิ่มเติม</label>
+      <textarea class="input-field" id="item-note" placeholder="รายละเอียดเพิ่มเติม..." rows="2" style="resize:none;"></textarea>
+    </div>
+
+    <!-- Cloudinary Config Notice -->
+    <div class="mb-5 p-3 rounded-xl text-xs" style="background:rgba(245,166,35,0.07); border:1px solid rgba(245,166,35,0.2); color:var(--muted)">
+      <div class="flex items-center justify-between mb-2">
+        <span style="color:var(--accent); font-weight:600;">⚙️ ตั้งค่า Cloudinary (ครั้งเดียว)</span>
+        <button onclick="toggleCloudHelp()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);">วิธีตั้งค่า ▾</button>
+      </div>
+      <div id="cloud-help" class="hidden mb-3 p-2 rounded-lg text-xs" style="background:rgba(0,0,0,0.3); line-height:1.8;">
+        <b style="color:var(--text)">วิธีสร้าง Unsigned Preset:</b><br>
+        1. เข้า <a href="https://cloudinary.com" target="_blank" style="color:var(--accent)">cloudinary.com</a> → Settings → Upload<br>
+        2. เลื่อนลงหา <b style="color:var(--text)">"Upload presets"</b> → Add upload preset<br>
+        3. เปลี่ยน Signing mode เป็น <b style="color:var(--success)">Unsigned</b><br>
+        4. บันทึก → คัดลอก <b style="color:var(--text)">Preset name</b><br>
+        5. Cloud Name อยู่ที่มุมบนขวาของ Dashboard
+      </div>
+      <div class="flex gap-2 mb-2">
+        <input type="text" id="cloud-name-input" class="input-field" placeholder="Cloud Name เช่น abc123xyz" style="padding:8px 12px; font-size:12px;">
+      </div>
+      <div class="flex gap-2">
+        <input type="text" id="upload-preset-input" class="input-field" placeholder="Upload Preset เช่น my_unsigned_preset" style="padding:8px 12px; font-size:12px;">
+        <button onclick="saveCloudConfig()" class="btn-primary" style="padding:8px 16px; font-size:12px; white-space:nowrap;">บันทึก</button>
+      </div>
+      <p id="cloud-name-status" class="mt-1 text-xs" style="color:var(--success)"></p>
+      <p class="mt-2 text-xs" style="color:rgba(167,169,190,0.6)">⚠️ ถ้าไม่ตั้งค่า Cloudinary ระบบจะบันทึกรูปเป็น Base64 ใน localStorage แทน (ใช้งานได้ปกติ แต่กินพื้นที่มากกว่า)</p>
+    </div>
+
+    <!-- Google Apps Script Config -->
+    <div class="mb-5 p-3 rounded-xl text-xs" style="background:rgba(107,203,119,0.07); border:1px solid rgba(107,203,119,0.2); color:var(--muted)">
+      <div class="flex items-center justify-between mb-2">
+        <span style="color:var(--success); font-weight:600;">📊 Google Sheet (ตั้งค่าครั้งเดียว)</span>
+        <button onclick="toggleSheetHelp()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);">วิธีตั้งค่า ▾</button>
+      </div>
+      <div id="sheet-help" class="hidden mb-3 p-2 rounded-lg text-xs" style="background:rgba(0,0,0,0.3); line-height:2;">
+        <b style="color:var(--text)">1.</b> เปิด <a href="https://script.google.com" target="_blank" style="color:var(--success)">script.google.com</a> → New project<br>
+        <b style="color:var(--text)">2.</b> วางโค้ด Apps Script ที่ได้รับ → Save<br>
+        <b style="color:var(--text)">3.</b> Deploy → New deployment → Web app<br>
+        <b style="color:var(--text)">4.</b> Execute as: <b style="color:var(--text)">Me</b> | Access: <b style="color:var(--text)">Anyone</b><br>
+        <b style="color:var(--text)">5.</b> คัดลอก Web app URL มาวางด้านล่าง
+      </div>
+      <div class="flex gap-2">
+        <input type="text" id="sheet-url-input" class="input-field" placeholder="https://script.google.com/macros/s/..." style="padding:8px 12px; font-size:12px;">
+        <button onclick="saveSheetUrl()" class="btn-primary" style="padding:8px 16px; font-size:12px; white-space:nowrap; background:linear-gradient(135deg,#6bcb77,#4caf50); color:#0f0e17;">บันทึก</button>
+      </div>
+      <p id="sheet-url-status" class="mt-1 text-xs" style="color:var(--success)"></p>
+    </div>
+
+    <button class="btn-primary w-full text-base" id="save-btn" onclick="saveItem()">
+      💾 บันทึกลงระบบ
+    </button>
+  </div>
+</div>
+
+<!-- View Item Modal -->
+<div class="modal-overlay" id="view-modal" onclick="closeViewOnOverlay(event)">
+  <div class="modal-box">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold" id="view-name">—</h2>
+      <button onclick="closeViewModal()" style="color:var(--muted); background:none; border:none; cursor:pointer; font-size:22px;">✕</button>
+    </div>
+    <img id="view-img" class="item-img mb-4" src="" alt="" style="display:none">
+    <div class="item-img-placeholder mb-4" id="view-img-placeholder" style="display:none">📦</div>
+    <div class="mb-3">
+      <p class="text-xs mb-1" style="color:var(--muted)">📍 ตำแหน่งที่เก็บ</p>
+      <p class="font-semibold text-base" id="view-location">—</p>
+    </div>
+    <div class="mb-3" id="view-category-wrap">
+      <p class="text-xs mb-1" style="color:var(--muted)">🏷️ หมวดหมู่</p>
+      <span class="tag" id="view-category">—</span>
+    </div>
+    <div class="mb-4" id="view-note-wrap">
+      <p class="text-xs mb-1" style="color:var(--muted)">📝 หมายเหตุ</p>
+      <p class="text-sm" id="view-note" style="color:var(--muted)">—</p>
+    </div>
+    <p class="text-xs" style="color:var(--border)" id="view-date">—</p>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let items = JSON.parse(localStorage.getItem('item-tracker-v2') || '[]');
+let cloudName = localStorage.getItem('cloudinary-cloud-name') || '';
+let uploadPreset = localStorage.getItem('cloudinary-upload-preset') || '';
+let sheetUrl = localStorage.getItem('gas-sheet-url') || '';
+let selectedFile = null;
+let currentSort = 'new';
+let uploadedImageUrl = '';
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  if (cloudName) document.getElementById('cloud-name-input').value = cloudName;
+  if (uploadPreset) document.getElementById('upload-preset-input').value = uploadPreset;
+  if (cloudName && uploadPreset) {
+    document.getElementById('cloud-name-status').textContent = `✓ พร้อมใช้งาน: ${cloudName} / ${uploadPreset}`;
+  }
+  if (sheetUrl) {
+    document.getElementById('sheet-url-input').value = sheetUrl;
+    document.getElementById('sheet-url-status').textContent = `✓ เชื่อมต่อ Google Sheet แล้ว`;
+  }
+  renderItems();
+});
+
+function toggleCloudHelp() {
+  document.getElementById('cloud-help').classList.toggle('hidden');
+}
+
+function toggleSheetHelp() {
+  document.getElementById('sheet-help').classList.toggle('hidden');
+}
+
+// ===== GOOGLE SHEET =====
+function saveSheetUrl() {
+  const val = document.getElementById('sheet-url-input').value.trim();
+  if (!val || !val.startsWith('https://script.google.com')) {
+    showToast('กรุณาใส่ Web app URL ที่ถูกต้อง', 'warn'); return;
+  }
+  sheetUrl = val;
+  localStorage.setItem('gas-sheet-url', sheetUrl);
+  document.getElementById('sheet-url-status').textContent = `✓ บันทึกแล้ว — กำลังทดสอบการเชื่อมต่อ...`;
+  // Test connection by loading items
+  loadFromSheet();
+}
+
+async function syncToSheet(item) {
+  if (!sheetUrl) return;
+  try {
+    const params = new URLSearchParams({
+      action: 'add',
+      id: item.id,
+      name: item.name,
+      location: item.location,
+      category: item.category || '',
+      note: item.note || '',
+      image: item.image || '',
+      createdAt: item.createdAt
+    });
+    await fetch(`${sheetUrl}?${params.toString()}`, { method: 'GET', mode: 'no-cors' });
+  } catch(e) { console.warn('Sheet sync failed', e); }
+}
+
+async function deleteFromSheet(id) {
+  if (!sheetUrl) return;
+  try {
+    const params = new URLSearchParams({ action: 'delete', id });
+    await fetch(`${sheetUrl}?${params.toString()}`, { method: 'GET', mode: 'no-cors' });
+  } catch(e) { console.warn('Sheet delete failed', e); }
+}
+
+async function loadFromSheet() {
+  if (!sheetUrl) {
+    showToast('กรุณาใส่ Google Sheet URL ก่อน', 'warn');
+    return;
+  }
+  const syncBtn = document.querySelector('[onclick="loadFromSheet()"]');
+  if (syncBtn) { syncBtn.textContent = '⏳ กำลังซิงค์...'; syncBtn.disabled = true; }
+  showToast('กำลังซิงค์กับ Google Sheet...', 'warn');
+
+  try {
+    const url = `${sheetUrl}?action=get&t=${Date.now()}`;
+    const res = await fetch(url, { redirect: 'follow' });
+    const text = await res.text();
+
+    let data;
+    try { data = JSON.parse(text); }
+    catch(e) {
+      showToast('❌ ตอบกลับจาก Sheet ไม่ใช่ JSON — ตรวจสอบ Deploy อีกครั้ง', 'warn');
+      if (syncBtn) { syncBtn.textContent = '🔄 ซิงค์'; syncBtn.disabled = false; }
+      return;
+    }
+
+    const sheetItems = data.items || [];
+    const sheetIds = new Set(sheetItems.map(i => String(i.id)));
+
+    // หา items ที่มีใน local แต่ยังไม่อยู่ใน Sheet → push ขึ้น Sheet
+    const localOnly = items.filter(i => !sheetIds.has(String(i.id)));
+    for (const item of localOnly) {
+      await syncToSheet(item);
+    }
+
+    // Merge: เอา Sheet เป็นหลัก + เพิ่ม localOnly ที่เพิ่งส่งขึ้นไป
+    const merged = [...sheetItems, ...localOnly];
+    // sort ล่าสุดก่อน
+    merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    items = merged;
+    saveToStorage();
+    renderItems();
+
+    const statusEl = document.getElementById('sheet-url-status');
+    if (statusEl) {
+      statusEl.textContent = `✓ ซิงค์สำเร็จ — ${items.length} รายการ (อัปโหลดใหม่ ${localOnly.length} รายการ)`;
+      statusEl.style.color = 'var(--success)';
+    }
+    showToast(`✓ ซิงค์สำเร็จ ${items.length} รายการ`);
+
+  } catch(e) {
+    showToast('❌ เชื่อมต่อ Sheet ไม่ได้ — ตรวจสอบ URL และสิทธิ์', 'warn');
+    console.error('loadFromSheet error:', e);
+  }
+
+  if (syncBtn) { syncBtn.textContent = '🔄 ซิงค์'; syncBtn.disabled = false; }
+}
+
+// ===== SORT =====
+function setSort(mode) {
+  currentSort = mode;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sort-' + mode).classList.add('active');
+  renderItems();
+}
+
+// ===== CLOUDINARY =====
+function saveCloudConfig() {
+  const cn = document.getElementById('cloud-name-input').value.trim();
+  const up = document.getElementById('upload-preset-input').value.trim();
+  if (!cn || !up) { showToast('กรุณาใส่ทั้ง Cloud Name และ Upload Preset', 'warn'); return; }
+  cloudName = cn;
+  uploadPreset = up;
+  localStorage.setItem('cloudinary-cloud-name', cloudName);
+  localStorage.setItem('cloudinary-upload-preset', uploadPreset);
+  document.getElementById('cloud-name-status').textContent = `✓ บันทึกแล้ว: ${cloudName} / ${uploadPreset}`;
+  showToast('บันทึกการตั้งค่า Cloudinary สำเร็จ ✓');
+}
+
+async function uploadToCloudinary(file) {
+  if (!cloudName || !uploadPreset) {
+    // Fallback to base64
+    return await readAsBase64(file);
+  }
+  const wrap = document.getElementById('upload-progress-wrap');
+  const bar = document.getElementById('upload-progress');
+  const status = document.getElementById('upload-status');
+  wrap.classList.remove('hidden');
+  status.classList.remove('hidden');
+  status.textContent = 'กำลังอัพโหลดรูป...';
+  status.style.color = 'var(--accent)';
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', uploadPreset);
+
+  return new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) bar.style.width = Math.round((e.loaded / e.total) * 100) + '%';
+    };
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const res = JSON.parse(xhr.responseText);
+        status.textContent = '✓ อัพโหลด Cloudinary สำเร็จ';
+        status.style.color = 'var(--success)';
+        resolve(res.secure_url);
+      } else {
+        let errMsg = 'อัพโหลดไม่สำเร็จ';
+        try { errMsg = JSON.parse(xhr.responseText)?.error?.message || errMsg; } catch(e) {}
+        status.textContent = `⚠️ ${errMsg} — บันทึกเป็น Base64 แทน`;
+        status.style.color = 'var(--accent)';
+        readAsBase64(file).then(resolve);
+      }
+    };
+    xhr.onerror = () => {
+      status.textContent = '⚠️ ไม่มีอินเทอร์เน็ต — บันทึกเป็น Base64 แทน';
+      status.style.color = 'var(--accent)';
+      readAsBase64(file).then(resolve);
+    };
+    xhr.send(formData);
+  });
+}
+
+function readAsBase64(file) {
+  return new Promise((res) => {
+    const reader = new FileReader();
+    reader.onload = (e) => res(e.target.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+// ===== FILE HANDLING =====
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) setPreview(file);
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.add('drag-over');
+}
+
+function handleDragLeave() {
+  document.getElementById('upload-zone').classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) setPreview(file);
+}
+
+function setPreview(file) {
+  selectedFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('preview-img').src = e.target.result;
+    document.getElementById('upload-placeholder').classList.add('hidden');
+    document.getElementById('upload-preview').classList.remove('hidden');
+    // reset progress
+    document.getElementById('upload-progress').style.width = '0%';
+    document.getElementById('upload-progress-wrap').classList.add('hidden');
+    document.getElementById('upload-status').classList.add('hidden');
+    document.getElementById('upload-status').style.color = 'var(--accent)';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ===== MODAL =====
+function openModal() {
+  resetForm();
+  document.getElementById('modal').classList.add('open');
+  setTimeout(() => document.getElementById('item-name').focus(), 300);
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+function closeOnOverlay(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+
+function resetForm() {
+  document.getElementById('item-name').value = '';
+  document.getElementById('item-location').value = '';
+  document.getElementById('item-category').value = '';
+  document.getElementById('item-note').value = '';
+  document.getElementById('file-input').value = '';
+  document.getElementById('upload-placeholder').classList.remove('hidden');
+  document.getElementById('upload-preview').classList.add('hidden');
+  document.getElementById('upload-progress-wrap').classList.add('hidden');
+  document.getElementById('upload-status').classList.add('hidden');
+  document.getElementById('upload-progress').style.width = '0%';
+  document.getElementById('upload-status').style.color = 'var(--accent)';
+  selectedFile = null;
+  uploadedImageUrl = '';
+  if (cloudName) document.getElementById('cloud-name-input').value = cloudName;
+  if (uploadPreset) document.getElementById('upload-preset-input').value = uploadPreset;
+  if (cloudName && uploadPreset) {
+    document.getElementById('cloud-name-status').textContent = `✓ พร้อมใช้งาน: ${cloudName} / ${uploadPreset}`;
+  }
+  if (sheetUrl) {
+    document.getElementById('sheet-url-input').value = sheetUrl;
+    document.getElementById('sheet-url-status').textContent = `✓ เชื่อมต่อ Google Sheet แล้ว`;
+  }
+}
+
+// ===== SAVE =====
+async function saveItem() {
+  const name = document.getElementById('item-name').value.trim();
+  const location = document.getElementById('item-location').value.trim();
+  const category = document.getElementById('item-category').value.trim();
+  const note = document.getElementById('item-note').value.trim();
+
+  if (!name) { shake('item-name'); showToast('กรุณาใส่ชื่อของ', 'warn'); return; }
+  if (!location) { shake('item-location'); showToast('กรุณาใส่ตำแหน่งที่เก็บ', 'warn'); return; }
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span> กำลังบันทึก...';
+
+  let imageUrl = '';
+  if (selectedFile) {
+    imageUrl = await uploadToCloudinary(selectedFile) || '';
+  }
+
+  const item = {
+    id: Date.now().toString(),
+    name, location, category, note,
+    image: imageUrl,
+    createdAt: new Date().toISOString()
+  };
+
+  items.unshift(item);
+  saveToStorage();
+  await syncToSheet(item);
+  renderItems();
+  closeModal();
+  showToast(`บันทึก "${name}" สำเร็จ ✓`);
+
+  btn.disabled = false;
+  btn.innerHTML = '💾 บันทึกลงระบบ';
+}
+
+function saveToStorage() {
+  localStorage.setItem('item-tracker-v2', JSON.stringify(items));
+}
+
+// ===== RENDER =====
+function renderItems() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  let filtered = items.filter(i =>
+    i.name.toLowerCase().includes(q) ||
+    i.location.toLowerCase().includes(q) ||
+    (i.category || '').toLowerCase().includes(q)
+  );
+
+  if (currentSort === 'old') filtered = filtered.slice().reverse();
+  else if (currentSort === 'az') filtered = filtered.slice().sort((a, b) => a.name.localeCompare(b.name, 'th'));
+
+  document.getElementById('item-count').textContent = `${items.length} ชิ้น`;
+
+  const grid = document.getElementById('items-grid');
+  const empty = document.getElementById('empty-state');
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+    grid.innerHTML = filtered.map((item, i) => `
+      <div class="card item-card p-4 cursor-pointer" style="animation-delay:${i * 40}ms" onclick="viewItem('${item.id}')">
+        ${item.image
+          ? `<img src="${item.image}" class="item-img mb-3" alt="${item.name}" loading="lazy">`
+          : `<div class="item-img-placeholder mb-3">📦</div>`
+        }
+        <div class="flex items-start justify-between gap-2 mb-2">
+          <h3 class="font-semibold text-sm leading-tight flex-1">${escHtml(item.name)}</h3>
+          ${item.category ? `<span class="tag flex-shrink-0">${escHtml(item.category)}</span>` : ''}
+        </div>
+        <div class="location-badge mb-3">
+          <span>📍</span>
+          <span class="truncate text-xs">${escHtml(item.location)}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-xs" style="color:var(--muted)">${formatDate(item.createdAt)}</span>
+          <button class="delete-btn" onclick="deleteItem(event,'${item.id}')">ลบ</button>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'2-digit' });
+}
+
+// ===== DELETE =====
+function deleteItem(e, id) {
+  e.stopPropagation();
+  if (!confirm('ลบรายการนี้?')) return;
+  items = items.filter(i => i.id !== id);
+  saveToStorage();
+  deleteFromSheet(id);
+  renderItems();
+  showToast('ลบรายการแล้ว');
+}
+
+// ===== VIEW MODAL =====
+function viewItem(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('view-name').textContent = item.name;
+  document.getElementById('view-location').textContent = item.location;
+
+  if (item.image) {
+    document.getElementById('view-img').src = item.image;
+    document.getElementById('view-img').style.display = '';
+    document.getElementById('view-img-placeholder').style.display = 'none';
+  } else {
+    document.getElementById('view-img').style.display = 'none';
+    document.getElementById('view-img-placeholder').style.display = '';
+  }
+
+  if (item.category) {
+    document.getElementById('view-category').textContent = item.category;
+    document.getElementById('view-category-wrap').style.display = '';
+  } else {
+    document.getElementById('view-category-wrap').style.display = 'none';
+  }
+
+  if (item.note) {
+    document.getElementById('view-note').textContent = item.note;
+    document.getElementById('view-note-wrap').style.display = '';
+  } else {
+    document.getElementById('view-note-wrap').style.display = 'none';
+  }
+
+  document.getElementById('view-date').textContent = `บันทึกเมื่อ ${formatDate(item.createdAt)}`;
+  document.getElementById('view-modal').classList.add('open');
+}
+
+function closeViewModal() {
+  document.getElementById('view-modal').classList.remove('open');
+}
+
+function closeViewOnOverlay(e) {
+  if (e.target === document.getElementById('view-modal')) closeViewModal();
+}
+
+// ===== TOAST =====
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  const m = document.getElementById('toast-msg');
+  m.textContent = msg;
+  if (type === 'error' || type === 'warn') {
+    t.style.borderColor = 'var(--accent)';
+    t.style.color = 'var(--accent)';
+  } else {
+    t.style.borderColor = 'var(--success)';
+    t.style.color = 'var(--success)';
+  }
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function shake(id) {
+  const el = document.getElementById(id);
+  el.style.animation = 'none';
+  el.style.borderColor = 'var(--accent2)';
+  setTimeout(() => { el.style.borderColor = ''; }, 1500);
+}
+
+// Keyboard ESC
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeModal();
+    closeViewModal();
+  }
+});
+</script>
+</body>
+</html>
