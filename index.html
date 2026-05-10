@@ -295,8 +295,14 @@ function out(o){return ContentService.createTextOutput(JSON.stringify(o)).setMim
     <div style="display:grid;grid-template-columns:80px 1fr;gap:9px;margin-bottom:10px;">
       <div>
         <label class="config-label">ไอคอน</label>
-        <input type="text" class="input-field" id="g-icon" placeholder="🗂" maxlength="4"
-          style="font-size:18px;text-align:center;">
+        <div style="display:flex;gap:5px;">
+          <input type="text" class="input-field" id="g-icon" placeholder="🗂" maxlength="4"
+            style="font-size:18px;text-align:center;flex:1;min-width:0;">
+          <button type="button" onclick="openEmojiPicker('g-icon', this)" title="เลือก emoji"
+            style="background:var(--bg);border:1px solid var(--border);border-radius:8px;
+                   padding:0 10px;cursor:pointer;font-size:14px;color:var(--muted);white-space:nowrap;"
+            >😊 ...</button>
+        </div>
       </div>
       <div>
         <label class="config-label">คำอธิบาย</label>
@@ -323,8 +329,14 @@ function out(o){return ContentService.createTextOutput(JSON.stringify(o)).setMim
     <div style="display:grid;grid-template-columns:80px 1fr;gap:9px;margin-bottom:14px;">
       <div>
         <label class="config-label">ไอคอน</label>
-        <input type="text" class="input-field" id="ws-icon-input" placeholder="🏢" maxlength="4"
-          style="font-size:18px;text-align:center;">
+        <div style="display:flex;gap:5px;">
+          <input type="text" class="input-field" id="ws-icon-input" placeholder="🏢" maxlength="4"
+            style="font-size:18px;text-align:center;flex:1;min-width:0;">
+          <button type="button" onclick="openEmojiPicker('ws-icon-input', this)" title="เลือก emoji"
+            style="background:var(--bg);border:1px solid var(--border);border-radius:8px;
+                   padding:0 10px;cursor:pointer;font-size:14px;color:var(--muted);white-space:nowrap;"
+            >😊 ...</button>
+        </div>
       </div>
       <div style="display:flex;align-items:flex-end;">
         <p style="font-size:11px;color:var(--muted);">แต่ละ Workspace มีของ, กลุ่ม แยกจากกัน</p>
