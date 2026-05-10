@@ -35,9 +35,14 @@ function saveGroup() {
 
   if (editGroupId) {
     const group = DB.groups.find(g => g.id === editGroupId);
-    if (group) { group.name = name; group.icon = icon; group.desc = desc; }
+    if (group) {
+      group.name = name; group.icon = icon; group.desc = desc;
+      updateGroupOnSheet(group);
+    }
   } else {
-    DB.groups.push({ id: 'g' + Date.now(), name, icon, desc, workspace: CWS });
+    const group = { id: 'g' + Date.now(), name, icon, desc, workspace: CWS };
+    DB.groups.push(group);
+    syncGroupToSheet(group);
   }
 
   save();
@@ -53,6 +58,7 @@ function delGrp(id) {
 
   DB.groups = DB.groups.filter(g => g.id !== id);
   DB.items.forEach(item => { if (item.groupId === id) item.groupId = ''; });
+  delGroupFromSheet(id);
 
   save();
   renderGroups();

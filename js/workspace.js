@@ -24,8 +24,10 @@ function saveWs() {
   if (!name) { toast('กรุณาใส่ชื่อ', 'warn'); return; }
 
   const id = 'ws' + Date.now();
-  DB.workspaces.push({ id, name, icon });
+  const ws = { id, name, icon };
+  DB.workspaces.push(ws);
   CWS = id;
+  syncWorkspaceToSheet(ws);
   save();
   closeModal('ws-modal');
   renderAll();
@@ -41,6 +43,7 @@ function delWs(id) {
   DB.items      = DB.items.filter(i => i.workspace !== id);
   DB.groups     = DB.groups.filter(g => g.workspace !== id);
   if (CWS === id) CWS = DB.workspaces[0]?.id || 'ws0';
+  delWorkspaceFromSheet(id);
 
   save();
   renderAll();
