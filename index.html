@@ -1,140 +1,102 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>จัดเก็บของ</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-:root{--bg:#0f0e17;--surface:#1a1828;--card:#221f35;--accent:#f5a623;--accent2:#e8635a;--text:#fffffe;--muted:#a7a9be;--border:#2e2b45;--success:#6bcb77;--info:#5b9cf6;}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;min-height:100vh;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.4;}
-.sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--surface);border-right:1px solid var(--border);z-index:30;display:flex;flex-direction:column;transition:transform 0.3s ease;}
-.sidebar.collapsed{transform:translateX(-240px);}
-.main-content{margin-left:240px;min-height:100vh;transition:margin 0.3s ease;}
-.main-content.expanded{margin-left:0;}
-@media(max-width:768px){.sidebar{transform:translateX(-240px);}.sidebar.open{transform:translateX(0);}.main-content{margin-left:0;}}
-.ws-item{padding:9px 12px;border-radius:9px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);}
-.ws-item:hover{background:rgba(255,255,255,0.06);color:var(--text);}
-.ws-item.active{background:rgba(245,166,35,0.15);color:var(--accent);font-weight:600;}
-.nav-btn{padding:9px 12px;border-radius:9px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);background:none;border:none;font-family:'Sarabun',sans-serif;width:100%;text-align:left;}
-.nav-btn:hover{background:rgba(255,255,255,0.06);color:var(--text);}
-.nav-btn.active{background:rgba(91,156,246,0.15);color:var(--info);}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;transition:all 0.3s ease;}
-.card:hover{border-color:rgba(245,166,35,0.3);box-shadow:0 6px 24px rgba(0,0,0,0.4);transform:translateY(-2px);}
-.group-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;overflow:hidden;}
-.group-header{padding:13px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background 0.2s;}
-.group-header:hover{background:rgba(255,255,255,0.04);}
-.input-field{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:10px 13px;font-family:'Sarabun',sans-serif;font-size:14px;transition:all 0.2s;width:100%;}
-.input-field:focus{outline:none;border-color:var(--accent);background:rgba(245,166,35,0.05);box-shadow:0 0 0 3px rgba(245,166,35,0.1);}
-.input-field::placeholder{color:var(--muted);}
-textarea.input-field{resize:none;}
-select.input-field{cursor:pointer;}
-.btn{border:none;border-radius:9px;padding:9px 18px;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
-.btn-primary{background:linear-gradient(135deg,var(--accent),#e8941a);color:#0f0e17;}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(245,166,35,0.4);}
-.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none;}
-.btn-ghost{background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--border);}
-.btn-ghost:hover{background:rgba(255,255,255,0.1);color:var(--text);}
-.btn-danger{background:rgba(232,99,90,0.12);color:var(--accent2);border:1px solid rgba(232,99,90,0.25);}
-.btn-danger:hover{background:rgba(232,99,90,0.25);}
-.btn-success{background:linear-gradient(135deg,#6bcb77,#4caf50);color:#0f0e17;}
-.btn-success:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(107,203,119,0.4);}
-.btn-info{background:rgba(91,156,246,0.12);color:var(--info);border:1px solid rgba(91,156,246,0.25);}
-.btn-info:hover{background:rgba(91,156,246,0.22);}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity 0.3s;}
-.modal-overlay.open{opacity:1;pointer-events:all;}
-.modal-box{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px;max-width:480px;width:100%;transform:translateY(20px) scale(0.97);transition:transform 0.3s;max-height:92vh;overflow-y:auto;}
-.modal-overlay.open .modal-box{transform:translateY(0) scale(1);}
-.upload-zone{border:2px dashed var(--border);border-radius:11px;background:rgba(255,255,255,0.02);transition:all 0.3s;cursor:pointer;position:relative;overflow:hidden;}
-.upload-zone:hover,.upload-zone.drag-over{border-color:var(--accent);background:rgba(245,166,35,0.05);}
-.upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;}
-.tag{background:rgba(245,166,35,0.14);color:var(--accent);border:1px solid rgba(245,166,35,0.28);border-radius:20px;padding:2px 9px;font-size:11px;font-weight:600;}
-.group-tag{background:rgba(91,156,246,0.14);color:var(--info);border:1px solid rgba(91,156,246,0.28);border-radius:20px;padding:2px 9px;font-size:11px;font-weight:600;}
-.loc-badge{background:rgba(107,203,119,0.1);border:1px solid rgba(107,203,119,0.22);color:var(--success);border-radius:7px;padding:3px 8px;font-size:11px;display:inline-flex;align-items:center;gap:3px;max-width:100%;overflow:hidden;}
-.item-img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:9px;background:var(--border);}
-.item-ph{width:100%;aspect-ratio:4/3;border-radius:9px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:26px;}
-.toast{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--success);color:var(--success);padding:11px 16px;border-radius:11px;font-size:13px;font-weight:600;z-index:100;transform:translateY(70px);opacity:0;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);display:flex;align-items:center;gap:7px;}
-.toast.show{transform:translateY(0);opacity:1;}
-.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
-.config-section{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:18px;margin-bottom:14px;}
-.config-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;display:block;letter-spacing:0.3px;}
-::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-.fade-in{animation:fadeUp 0.25s ease both;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.spinner{width:14px;height:14px;border:2px solid rgba(245,166,35,0.3);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
-.progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),#e8941a);transition:width 0.3s;}
-.search-bar{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:9px 14px 9px 38px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;width:100%;transition:all 0.2s;}
-.search-bar:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,166,35,0.1);}
-.topbar{position:sticky;top:0;z-index:20;background:rgba(15,14,23,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:11px 18px;display:flex;align-items:center;gap:10px;}
-.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:29;}
-@media(max-width:768px){.sidebar-overlay.show{display:block;}}
-code{background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:4px;font-size:11px;}
-pre{background:rgba(0,0,0,0.4);border-radius:8px;padding:12px;font-size:10.5px;overflow-x:auto;color:var(--muted);line-height:1.7;white-space:pre-wrap;}
-details summary{cursor:pointer;font-size:12px;color:var(--muted);}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จัดเก็บของ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
-<div class="toast" id="toast"><span id="t-icon">✓</span><span id="t-msg"></span></div>
+<!-- Toast Notification -->
+<div class="toast" id="toast">
+  <span id="t-icon">✓</span>
+  <span id="t-msg"></span>
+</div>
+
+<!-- Sidebar Overlay (mobile) -->
 <div class="sidebar-overlay" id="sb-ov" onclick="closeSidebar()"></div>
 
-<!-- SIDEBAR -->
+<!-- ============================================================
+     SIDEBAR
+     ============================================================ -->
 <div class="sidebar" id="sidebar">
+
+  <!-- Header: Workspaces -->
   <div style="padding:16px 14px 10px;border-bottom:1px solid var(--border);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
       <span style="font-weight:700;font-size:15px;">📦 จัดเก็บของ</span>
-      <button id="sb-close" onclick="closeSidebar()" style="display:none;background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;">✕</button>
+      <button id="sb-close" onclick="closeSidebar()"
+        style="display:none;background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;">✕</button>
     </div>
     <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">WORKSPACES</div>
     <div id="ws-list" style="display:flex;flex-direction:column;gap:2px;"></div>
-    <button onclick="openModal('ws-modal');document.getElementById('ws-name-input').value='';document.getElementById('ws-icon-input').value='🏢';" class="btn btn-ghost" style="width:100%;margin-top:8px;padding:7px 10px;font-size:12px;justify-content:center;">+ New Workspace</button>
+    <button onclick="openModal('ws-modal');document.getElementById('ws-name-input').value='';document.getElementById('ws-icon-input').value='🏢';"
+      class="btn btn-ghost" style="width:100%;margin-top:8px;padding:7px 10px;font-size:12px;justify-content:center;">
+      + New Workspace
+    </button>
   </div>
+
+  <!-- Navigation Menu -->
   <div style="padding:10px 14px;flex:1;display:flex;flex-direction:column;gap:2px;">
     <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">MENU</div>
-    <button class="nav-btn active" id="nav-items" onclick="switchView('items')">📦 รายการของ</button>
-    <button class="nav-btn" id="nav-groups" onclick="switchView('groups')">🗂 จัดการกลุ่ม</button>
-    <button class="nav-btn" id="nav-config" onclick="switchView('config')">⚙️ ตั้งค่า</button>
+    <button class="nav-btn active" id="nav-items"  onclick="switchView('items')">📦 รายการของ</button>
+    <button class="nav-btn"        id="nav-groups" onclick="switchView('groups')">🗂 จัดการกลุ่ม</button>
+    <button class="nav-btn"        id="nav-config" onclick="switchView('config')">⚙️ ตั้งค่า</button>
   </div>
+
   <div style="padding:10px 14px;border-top:1px solid var(--border);text-align:center;font-size:10px;color:var(--border);">v2.0</div>
 </div>
 
-<!-- MAIN -->
+<!-- ============================================================
+     MAIN CONTENT
+     ============================================================ -->
 <div class="main-content" id="main">
+
   <!-- Topbar -->
   <div class="topbar">
-    <button onclick="toggleSidebar()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;flex-shrink:0;line-height:1;">☰</button>
+    <button onclick="toggleSidebar()"
+      style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;flex-shrink:0;line-height:1;">☰</button>
     <div style="flex:1;display:flex;align-items:baseline;gap:8px;">
       <span id="tb-title" style="font-weight:700;font-size:15px;"></span>
-      <span id="tb-ws" style="font-size:11px;color:var(--muted);"></span>
+      <span id="tb-ws"    style="font-size:11px;color:var(--muted);"></span>
     </div>
-    <button onclick="loadFromSheet()" id="sync-btn" class="btn btn-info" style="padding:6px 12px;font-size:12px;">🔄 ซิงค์</button>
-    <button onclick="openAddModal()" id="add-btn" class="btn btn-primary" style="padding:7px 14px;font-size:13px;">+ เพิ่มของ</button>
+    <button onclick="loadFromSheet()" id="sync-btn" class="btn btn-info"
+      style="padding:6px 12px;font-size:12px;">🔄 ซิงค์</button>
+    <button onclick="openAddModal()" id="add-btn" class="btn btn-primary"
+      style="padding:7px 14px;font-size:13px;">+ เพิ่มของ</button>
   </div>
 
-  <!-- PAGE: ITEMS -->
+  <!-- ── PAGE: ITEMS ── -->
   <div id="page-items" style="padding:18px;">
+
+    <!-- Filters -->
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
       <div style="position:relative;flex:1;min-width:160px;">
         <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;">🔍</span>
-        <input class="search-bar" type="text" id="search-input" placeholder="ค้นหาชื่อ, ตำแหน่ง, กลุ่ม..." oninput="renderItems()">
+        <input class="search-bar" type="text" id="search-input"
+          placeholder="ค้นหาชื่อ, ตำแหน่ง, กลุ่ม..." oninput="renderItems()">
       </div>
-      <select class="input-field" id="filter-group" onchange="renderItems()" style="width:auto;padding:9px 11px;font-size:12px;">
+      <select class="input-field" id="filter-group" onchange="renderItems()"
+        style="width:auto;padding:9px 11px;font-size:12px;">
         <option value="">ทุกกลุ่ม</option>
       </select>
-      <select class="input-field" id="sort-sel" onchange="renderItems()" style="width:auto;padding:9px 11px;font-size:12px;">
+      <select class="input-field" id="sort-sel" onchange="renderItems()"
+        style="width:auto;padding:9px 11px;font-size:12px;">
         <option value="new">ล่าสุด</option>
         <option value="old">เก่าสุด</option>
         <option value="az">ก-ฮ</option>
         <option value="grp">ตามกลุ่ม</option>
       </select>
     </div>
+
+    <!-- Item Lists -->
     <div id="ungrouped-sec"></div>
     <div id="grouped-sec"></div>
+
+    <!-- Empty State -->
     <div id="empty-st" style="display:none;text-align:center;padding:70px 20px;opacity:0.4;">
       <div style="font-size:52px;margin-bottom:10px;">🗃️</div>
       <p style="font-size:17px;font-weight:600;margin-bottom:4px;">ยังไม่มีรายการ</p>
@@ -142,7 +104,7 @@ details summary{cursor:pointer;font-size:12px;color:var(--muted);}
     </div>
   </div>
 
-  <!-- PAGE: GROUPS -->
+  <!-- ── PAGE: GROUPS ── -->
   <div id="page-groups" style="padding:18px;display:none;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
       <h2 style="font-size:17px;font-weight:700;">🗂 กลุ่มทั้งหมด</h2>
@@ -156,19 +118,21 @@ details summary{cursor:pointer;font-size:12px;color:var(--muted);}
     </div>
   </div>
 
-  <!-- PAGE: CONFIG -->
+  <!-- ── PAGE: CONFIG ── -->
   <div id="page-config" style="padding:18px;max-width:620px;display:none;">
     <h2 style="font-size:17px;font-weight:700;margin-bottom:18px;">⚙️ ตั้งค่าระบบ</h2>
 
-    <!-- One-line -->
+    <!-- One-line Config -->
     <div class="config-section">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <span style="font-size:15px;">⚡</span><span style="font-weight:700;">One-line Config</span>
+        <span style="font-size:15px;">⚡</span>
+        <span style="font-weight:700;">One-line Config</span>
         <span style="font-size:10px;background:rgba(91,156,246,0.18);color:var(--info);padding:2px 8px;border-radius:20px;">แนะนำ</span>
       </div>
       <p style="font-size:11px;color:var(--muted);margin-bottom:8px;">รูปแบบ: <code>cloud_name|upload_preset|apps_script_url</code></p>
       <div style="display:flex;gap:8px;">
-        <input type="text" class="input-field" id="oneline-cfg" placeholder="my-cloud|my_preset|https://script.google.com/macros/s/..." style="font-size:12px;">
+        <input type="text" class="input-field" id="oneline-cfg"
+          placeholder="my-cloud|my_preset|https://script.google.com/macros/s/..." style="font-size:12px;">
         <button onclick="applyOneline()" class="btn btn-primary" style="white-space:nowrap;padding:9px 14px;">ใช้งาน</button>
       </div>
       <p id="oneline-st" style="font-size:11px;margin-top:5px;color:var(--success);"></p>
@@ -177,7 +141,8 @@ details summary{cursor:pointer;font-size:12px;color:var(--muted);}
     <!-- Cloudinary -->
     <div class="config-section">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="font-size:15px;">☁️</span><span style="font-weight:700;">Cloudinary</span>
+        <span style="font-size:15px;">☁️</span>
+        <span style="font-weight:700;">Cloudinary</span>
         <span id="cl-dot" style="width:7px;height:7px;border-radius:50%;background:var(--border);"></span>
       </div>
       <label class="config-label">Cloud Name</label>
@@ -194,11 +159,13 @@ details summary{cursor:pointer;font-size:12px;color:var(--muted);}
     <!-- Google Sheet -->
     <div class="config-section">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="font-size:15px;">📊</span><span style="font-weight:700;">Google Sheet</span>
+        <span style="font-size:15px;">📊</span>
+        <span style="font-weight:700;">Google Sheet</span>
         <span id="gs-dot" style="width:7px;height:7px;border-radius:50%;background:var(--border);"></span>
       </div>
       <label class="config-label">Apps Script Web App URL</label>
-      <input type="text" class="input-field" id="gs-url" placeholder="https://script.google.com/macros/s/..." style="margin-bottom:11px;font-size:12px;">
+      <input type="text" class="input-field" id="gs-url"
+        placeholder="https://script.google.com/macros/s/..." style="margin-bottom:11px;font-size:12px;">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <button onclick="saveSheet()" class="btn btn-success" style="padding:8px 16px;">บันทึก</button>
         <button onclick="loadFromSheet()" class="btn btn-info" style="padding:8px 16px;">🔄 ทดสอบ</button>
@@ -219,7 +186,7 @@ function doGet(e){
   const a=e.parameter.action||'get',s=getSheet();
   if(a==='get'){
     const r=s.getDataRange().getValues(),items=[];
-    for(let i=1;i<r.length;i++){if(!r[i][0])continue;
+    for(let i=1;i&lt;r.length;i++){if(!r[i][0])continue;
       items.push({id:String(r[i][0]),name:r[i][1],location:r[i][2],
         groupId:r[i][3],category:r[i][4],note:r[i][5],
         image:r[i][6],workspace:r[i][7],createdAt:r[i][8]});}
@@ -231,7 +198,7 @@ function doGet(e){
     return out({success:true});}
   if(a==='delete'){
     const r=s.getDataRange().getValues();
-    for(let i=1;i<r.length;i++){if(String(r[i][0])===String(e.parameter.id)){s.deleteRow(i+1);break;}}
+    for(let i=1;i&lt;r.length;i++){if(String(r[i][0])===String(e.parameter.id)){s.deleteRow(i+1);break;}}
     return out({success:true});}
   return out({error:'unknown'});}
 function out(o){return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);}</pre>
@@ -241,42 +208,74 @@ function out(o){return ContentService.createTextOutput(JSON.stringify(o)).setMim
     <!-- Workspaces -->
     <div class="config-section">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="font-size:15px;">🏢</span><span style="font-weight:700;">Workspaces</span>
+        <span style="font-size:15px;">🏢</span>
+        <span style="font-weight:700;">Workspaces</span>
       </div>
       <div id="ws-cfg" style="display:flex;flex-direction:column;gap:7px;margin-bottom:11px;"></div>
-      <button onclick="openModal('ws-modal');document.getElementById('ws-name-input').value='';document.getElementById('ws-icon-input').value='🏢';" class="btn btn-ghost" style="padding:8px 16px;">+ New Workspace</button>
+      <button onclick="openModal('ws-modal');document.getElementById('ws-name-input').value='';document.getElementById('ws-icon-input').value='🏢';"
+        class="btn btn-ghost" style="padding:8px 16px;">+ New Workspace</button>
     </div>
   </div>
+
 </div><!-- /main -->
 
-<!-- ====== MODALS ====== -->
-<!-- Add/Edit Item -->
+<!-- ============================================================
+     MODALS
+     ============================================================ -->
+
+<!-- Add / Edit Item -->
 <div class="modal-overlay" id="add-modal" onclick="if(event.target===this)closeModal('add-modal')">
   <div class="modal-box">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <h2 style="font-size:16px;font-weight:700;" id="am-title">เพิ่มของใหม่</h2>
-      <button onclick="closeModal('add-modal')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;">✕</button>
+      <button onclick="closeModal('add-modal')"
+        style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;">✕</button>
     </div>
+
     <label class="config-label">รูปภาพ</label>
-    <div class="upload-zone" id="upzone" style="padding:20px;text-align:center;margin-bottom:12px;" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
+    <div class="upload-zone" id="upzone" style="padding:20px;text-align:center;margin-bottom:12px;"
+      ondragover="event.preventDefault();this.classList.add('drag-over')"
+      ondragleave="this.classList.remove('drag-over')"
+      ondrop="handleDrop(event)">
       <input type="file" id="file-inp" accept="image/*" onchange="setPreview(event.target.files[0])">
-      <div id="up-ph"><div style="font-size:28px;margin-bottom:4px;">📷</div><p style="font-size:12px;font-weight:600;">คลิกหรือลากรูปมาวาง</p></div>
-      <div id="up-pv" style="display:none;"><img id="prev-img" style="max-height:120px;border-radius:7px;object-fit:contain;" src="" alt=""><p style="font-size:10px;color:var(--muted);margin-top:4px;">คลิกเพื่อเปลี่ยน</p></div>
+      <div id="up-ph">
+        <div style="font-size:28px;margin-bottom:4px;">📷</div>
+        <p style="font-size:12px;font-weight:600;">คลิกหรือลากรูปมาวาง</p>
+      </div>
+      <div id="up-pv" style="display:none;">
+        <img id="prev-img" style="max-height:120px;border-radius:7px;object-fit:contain;" src="" alt="">
+        <p style="font-size:10px;color:var(--muted);margin-top:4px;">คลิกเพื่อเปลี่ยน</p>
+      </div>
     </div>
-    <div class="progress-bar" id="up-bar" style="display:none;margin-bottom:6px;"><div class="progress-fill" id="up-fill" style="width:0%"></div></div>
+    <div class="progress-bar" id="up-bar" style="display:none;margin-bottom:6px;">
+      <div class="progress-fill" id="up-fill" style="width:0%"></div>
+    </div>
     <p id="up-st" style="font-size:10px;margin-bottom:8px;color:var(--accent);display:none;"></p>
+
     <label class="config-label">ชื่อของ *</label>
     <input type="text" class="input-field" id="i-name" placeholder="เช่น กรรไกรตัดผ้า" style="margin-bottom:10px;">
+
     <label class="config-label">ตำแหน่งที่เก็บ *</label>
     <input type="text" class="input-field" id="i-loc" placeholder="เช่น ลิ้นชักซ้าย, ชั้นบนสุด" style="margin-bottom:10px;">
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px;">
-      <div><label class="config-label">กลุ่ม</label><select class="input-field" id="i-grp"><option value="">ไม่มีกลุ่ม</option></select></div>
-      <div><label class="config-label">หมวดหมู่</label><input type="text" class="input-field" id="i-cat" placeholder="เช่น เครื่องมือ"></div>
+      <div>
+        <label class="config-label">กลุ่ม</label>
+        <select class="input-field" id="i-grp"><option value="">ไม่มีกลุ่ม</option></select>
+      </div>
+      <div>
+        <label class="config-label">หมวดหมู่</label>
+        <input type="text" class="input-field" id="i-cat" placeholder="เช่น เครื่องมือ">
+      </div>
     </div>
+
     <label class="config-label">หมายเหตุ</label>
-    <textarea class="input-field" id="i-note" placeholder="รายละเอียดเพิ่มเติม..." rows="2" style="margin-bottom:14px;"></textarea>
+    <textarea class="input-field" id="i-note" placeholder="รายละเอียดเพิ่มเติม..." rows="2"
+      style="margin-bottom:14px;"></textarea>
+
     <input type="hidden" id="i-edit-id">
-    <button class="btn btn-primary" id="save-btn" onclick="saveItem()" style="width:100%;padding:11px;justify-content:center;">💾 บันทึก</button>
+    <button class="btn btn-primary" id="save-btn" onclick="saveItem()"
+      style="width:100%;padding:11px;justify-content:center;">💾 บันทึก</button>
   </div>
 </div>
 
@@ -285,16 +284,26 @@ function out(o){return ContentService.createTextOutput(JSON.stringify(o)).setMim
   <div class="modal-box" style="max-width:380px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <h2 style="font-size:16px;font-weight:700;" id="gm-title">สร้างกลุ่ม</h2>
-      <button onclick="closeModal('grp-modal')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;">✕</button>
+      <button onclick="closeModal('grp-modal')"
+        style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;">✕</button>
     </div>
     <label class="config-label">ชื่อกลุ่ม *</label>
-    <input type="text" class="input-field" id="g-name" placeholder="เช่น ลังหลังตู้, กล่องใต้เตียง" style="margin-bottom:10px;">
+    <input type="text" class="input-field" id="g-name" placeholder="เช่น ลังหลังตู้, กล่องใต้เตียง"
+      style="margin-bottom:10px;">
     <div style="display:grid;grid-template-columns:80px 1fr;gap:9px;margin-bottom:10px;">
-      <div><label class="config-label">ไอคอน</label><input type="text" class="input-field" id="g-icon" placeholder="🗂" maxlength="4" style="font-size:18px;text-align:center;"></div>
-      <div><label class="config-label">คำอธิบาย</label><input type="text" class="input-field" id="g-desc" placeholder="อธิบายกลุ่มนี้..."></div>
+      <div>
+        <label class="config-label">ไอคอน</label>
+        <input type="text" class="input-field" id="g-icon" placeholder="🗂" maxlength="4"
+          style="font-size:18px;text-align:center;">
+      </div>
+      <div>
+        <label class="config-label">คำอธิบาย</label>
+        <input type="text" class="input-field" id="g-desc" placeholder="อธิบายกลุ่มนี้...">
+      </div>
     </div>
     <input type="hidden" id="g-edit-id">
-    <button class="btn btn-primary" onclick="saveGroup()" style="width:100%;padding:11px;justify-content:center;">💾 บันทึกกลุ่ม</button>
+    <button class="btn btn-primary" onclick="saveGroup()"
+      style="width:100%;padding:11px;justify-content:center;">💾 บันทึกกลุ่ม</button>
   </div>
 </div>
 
@@ -303,15 +312,24 @@ function out(o){return ContentService.createTextOutput(JSON.stringify(o)).setMim
   <div class="modal-box" style="max-width:360px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <h2 style="font-size:16px;font-weight:700;">สร้าง Workspace</h2>
-      <button onclick="closeModal('ws-modal')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;">✕</button>
+      <button onclick="closeModal('ws-modal')"
+        style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;">✕</button>
     </div>
     <label class="config-label">ชื่อ Workspace *</label>
-    <input type="text" class="input-field" id="ws-name-input" placeholder="เช่น ห้องทำงาน, โกดัง" style="margin-bottom:10px;">
+    <input type="text" class="input-field" id="ws-name-input" placeholder="เช่น ห้องทำงาน, โกดัง"
+      style="margin-bottom:10px;">
     <div style="display:grid;grid-template-columns:80px 1fr;gap:9px;margin-bottom:14px;">
-      <div><label class="config-label">ไอคอน</label><input type="text" class="input-field" id="ws-icon-input" placeholder="🏢" maxlength="4" style="font-size:18px;text-align:center;"></div>
-      <div style="display:flex;align-items:flex-end;"><p style="font-size:11px;color:var(--muted);">แต่ละ Workspace มีของ, กลุ่ม แยกจากกัน</p></div>
+      <div>
+        <label class="config-label">ไอคอน</label>
+        <input type="text" class="input-field" id="ws-icon-input" placeholder="🏢" maxlength="4"
+          style="font-size:18px;text-align:center;">
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <p style="font-size:11px;color:var(--muted);">แต่ละ Workspace มีของ, กลุ่ม แยกจากกัน</p>
+      </div>
     </div>
-    <button class="btn btn-primary" onclick="saveWs()" style="width:100%;padding:11px;justify-content:center;">✅ สร้าง Workspace</button>
+    <button class="btn btn-primary" onclick="saveWs()"
+      style="width:100%;padding:11px;justify-content:center;">✅ สร้าง Workspace</button>
   </div>
 </div>
 
@@ -320,505 +338,48 @@ function out(o){return ContentService.createTextOutput(JSON.stringify(o)).setMim
   <div class="modal-box">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
       <h2 style="font-size:16px;font-weight:700;" id="v-name"></h2>
-      <button onclick="closeModal('view-modal')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;">✕</button>
+      <button onclick="closeModal('view-modal')"
+        style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;">✕</button>
     </div>
     <img id="v-img" class="item-img" style="margin-bottom:12px;display:none;" src="" alt="">
     <div class="item-ph" id="v-ph" style="margin-bottom:12px;display:none;">📦</div>
-    <div style="margin-bottom:9px;"><p style="font-size:10px;color:var(--muted);margin-bottom:2px;">📍 ตำแหน่ง</p><p style="font-weight:600;font-size:14px;" id="v-loc"></p></div>
-    <div id="v-grp-r" style="margin-bottom:9px;display:none;"><p style="font-size:10px;color:var(--muted);margin-bottom:2px;">🗂 กลุ่ม</p><span class="group-tag" id="v-grp"></span></div>
-    <div id="v-cat-r" style="margin-bottom:9px;display:none;"><p style="font-size:10px;color:var(--muted);margin-bottom:2px;">🏷️ หมวดหมู่</p><span class="tag" id="v-cat"></span></div>
-    <div id="v-note-r" style="margin-bottom:9px;display:none;"><p style="font-size:10px;color:var(--muted);margin-bottom:2px;">📝 หมายเหตุ</p><p style="font-size:13px;color:var(--muted);" id="v-note"></p></div>
+    <div style="margin-bottom:9px;">
+      <p style="font-size:10px;color:var(--muted);margin-bottom:2px;">📍 ตำแหน่ง</p>
+      <p style="font-weight:600;font-size:14px;" id="v-loc"></p>
+    </div>
+    <div id="v-grp-r" style="margin-bottom:9px;display:none;">
+      <p style="font-size:10px;color:var(--muted);margin-bottom:2px;">🗂 กลุ่ม</p>
+      <span class="group-tag" id="v-grp"></span>
+    </div>
+    <div id="v-cat-r" style="margin-bottom:9px;display:none;">
+      <p style="font-size:10px;color:var(--muted);margin-bottom:2px;">🏷️ หมวดหมู่</p>
+      <span class="tag" id="v-cat"></span>
+    </div>
+    <div id="v-note-r" style="margin-bottom:9px;display:none;">
+      <p style="font-size:10px;color:var(--muted);margin-bottom:2px;">📝 หมายเหตุ</p>
+      <p style="font-size:13px;color:var(--muted);" id="v-note"></p>
+    </div>
     <p style="font-size:10px;color:var(--border);margin-top:6px;" id="v-date"></p>
     <div style="display:flex;gap:8px;margin-top:12px;">
-      <button onclick="editFromView()" class="btn btn-ghost" style="flex:1;justify-content:center;">✏️ แก้ไข</button>
-      <button onclick="delFromView()" class="btn btn-danger" style="flex:1;justify-content:center;">🗑 ลบ</button>
+      <button onclick="editFromView()" class="btn btn-ghost"   style="flex:1;justify-content:center;">✏️ แก้ไข</button>
+      <button onclick="delFromView()"  class="btn btn-danger"  style="flex:1;justify-content:center;">🗑 ลบ</button>
     </div>
   </div>
 </div>
 
-<script>
-// ============================================================
-// DB
-// ============================================================
-let DB = (() => {
-  const def = {
-    workspaces:[{id:'ws0',name:'Default',icon:'🏠'}],
-    currentWs:'ws0',
-    items:[],
-    groups:[],
-    config:{cloudName:'',uploadPreset:'',sheetUrl:''}
-  };
-  try {
-    const s = JSON.parse(localStorage.getItem('itk-v3')||'null');
-    if (!s) {
-      // migrate v2
-      const old = JSON.parse(localStorage.getItem('item-tracker-v2')||'[]');
-      if (old.length) def.items = old.map(i=>({...i,workspace:'ws0',groupId:''}));
-      return def;
-    }
-    return {...def,...s,config:{...def.config,...(s.config||{})}};
-  } catch(e){return def;}
-})();
+<!-- ============================================================
+     SCRIPTS (load order matters — db first, app last)
+     ============================================================ -->
+<script src="js/db.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/upload.js"></script>
+<script src="js/groups.js"></script>
+<script src="js/items.js"></script>
+<script src="js/config.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/workspace.js"></script>
+<script src="js/views.js"></script>
+<script src="js/app.js"></script>
 
-let CWS = DB.currentWs;
-let curView = 'items';
-let viewId = null;
-let editId = null;
-let selFile = null;
-
-function save(){DB.currentWs=CWS;localStorage.setItem('itk-v3',JSON.stringify(DB));}
-
-// ============================================================
-// BOOT
-// ============================================================
-document.addEventListener('DOMContentLoaded',()=>{
-  if(window.innerWidth<=768) document.getElementById('sb-close').style.display='block';
-  loadCfgInputs();
-  renderAll();
-});
-
-function renderAll(){
-  renderWsList();renderWsCfg();
-  updateTopbar();
-  renderItems();renderGroups();renderGrpSel();
-}
-
-// ============================================================
-// SIDEBAR / WORKSPACE
-// ============================================================
-function renderWsList(){
-  document.getElementById('ws-list').innerHTML = DB.workspaces.map(w=>`
-    <div class="ws-item ${w.id===CWS?'active':''}" onclick="switchWs('${w.id}')">
-      <span style="font-size:13px;">${w.icon||'🏢'}</span>
-      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(w.name)}</span>
-    </div>`).join('');
-}
-
-function switchWs(id){CWS=id;save();renderAll();closeSidebar();}
-
-function saveWs(){
-  const name=document.getElementById('ws-name-input').value.trim();
-  const icon=document.getElementById('ws-icon-input').value.trim()||'🏢';
-  if(!name){toast('กรุณาใส่ชื่อ','warn');return;}
-  const id='ws'+Date.now();
-  DB.workspaces.push({id,name,icon});
-  CWS=id;save();closeModal('ws-modal');renderAll();
-  toast(`สร้าง "${name}" แล้ว ✓`);
-}
-
-function delWs(id){
-  const w=DB.workspaces.find(x=>x.id===id);
-  const cnt=DB.items.filter(i=>i.workspace===id).length;
-  if(!confirm(`ลบ "${w?.name}"? มีของ ${cnt} ชิ้น`)) return;
-  DB.workspaces=DB.workspaces.filter(x=>x.id!==id);
-  DB.items=DB.items.filter(i=>i.workspace!==id);
-  DB.groups=DB.groups.filter(g=>g.workspace!==id);
-  if(CWS===id) CWS=DB.workspaces[0]?.id||'ws0';
-  save();renderAll();toast('ลบ Workspace แล้ว');
-}
-
-function renderWsCfg(){
-  document.getElementById('ws-cfg').innerHTML=DB.workspaces.map(w=>`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(255,255,255,0.04);border-radius:9px;">
-      <span style="font-size:13px;">${w.icon} ${esc(w.name)}</span>
-      <div style="display:flex;gap:6px;align-items:center;">
-        ${w.id===CWS?'<span style="font-size:10px;color:var(--success);background:rgba(107,203,119,0.1);padding:2px 8px;border-radius:20px;">ใช้งานอยู่</span>':''}
-        ${DB.workspaces.length>1&&w.id!=='ws0'?`<button onclick="delWs('${w.id}')" class="btn btn-danger" style="padding:3px 9px;font-size:11px;">ลบ</button>`:''}
-      </div>
-    </div>`).join('');
-}
-
-function toggleSidebar(){
-  const sb=document.getElementById('sidebar');
-  if(window.innerWidth<=768){
-    sb.classList.toggle('open');
-    document.getElementById('sb-ov').classList.toggle('show');
-  } else {
-    sb.classList.toggle('collapsed');
-    document.getElementById('main').classList.toggle('expanded');
-  }
-}
-function closeSidebar(){
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sb-ov').classList.remove('show');
-}
-
-// ============================================================
-// VIEWS
-// ============================================================
-function switchView(v){
-  curView=v;
-  ['items','groups','config'].forEach(x=>{
-    document.getElementById('page-'+x).style.display=x===v?'block':'none';
-    document.getElementById('nav-'+x).classList.toggle('active',x===v);
-  });
-  document.getElementById('add-btn').style.display=v==='items'?'':'none';
-  updateTopbar();
-  if(v==='groups') renderGroups();
-  if(v==='config'){renderWsCfg();loadCfgInputs();}
-}
-
-function updateTopbar(){
-  const w=DB.workspaces.find(x=>x.id===CWS);
-  const t={items:'📦 รายการของ',groups:'🗂 จัดการกลุ่ม',config:'⚙️ ตั้งค่า'};
-  document.getElementById('tb-title').textContent=t[curView]||'';
-  document.getElementById('tb-ws').textContent=w?`${w.icon} ${w.name}`:'';
-}
-
-// ============================================================
-// GROUPS
-// ============================================================
-function wsGrps(){return DB.groups.filter(g=>g.workspace===CWS);}
-
-function openGroupModal(eid=null){
-  document.getElementById('g-edit-id').value=eid||'';
-  if(eid){
-    const g=DB.groups.find(x=>x.id===eid);
-    document.getElementById('gm-title').textContent='แก้ไขกลุ่ม';
-    document.getElementById('g-name').value=g.name;
-    document.getElementById('g-icon').value=g.icon||'🗂';
-    document.getElementById('g-desc').value=g.desc||'';
-  } else {
-    document.getElementById('gm-title').textContent='สร้างกลุ่ม';
-    document.getElementById('g-name').value='';
-    document.getElementById('g-icon').value='🗂';
-    document.getElementById('g-desc').value='';
-  }
-  openModal('grp-modal');
-}
-
-function saveGroup(){
-  const name=document.getElementById('g-name').value.trim();
-  const icon=document.getElementById('g-icon').value.trim()||'🗂';
-  const desc=document.getElementById('g-desc').value.trim();
-  const eid=document.getElementById('g-edit-id').value;
-  if(!name){toast('กรุณาใส่ชื่อกลุ่ม','warn');return;}
-  if(eid){const g=DB.groups.find(x=>x.id===eid);if(g){g.name=name;g.icon=icon;g.desc=desc;}}
-  else DB.groups.push({id:'g'+Date.now(),name,icon,desc,workspace:CWS});
-  save();closeModal('grp-modal');renderGroups();renderGrpSel();
-  toast(`${eid?'แก้ไข':'สร้าง'}กลุ่ม "${name}" ✓`);
-}
-
-function delGrp(id){
-  const g=DB.groups.find(x=>x.id===id);
-  if(!confirm(`ลบกลุ่ม "${g?.name}"? ของจะถูกย้ายออกจากกลุ่ม`)) return;
-  DB.groups=DB.groups.filter(x=>x.id!==id);
-  DB.items.forEach(i=>{if(i.groupId===id)i.groupId='';});
-  save();renderGroups();renderGrpSel();renderItems();toast('ลบกลุ่มแล้ว');
-}
-
-function renderGroups(){
-  const gs=wsGrps();
-  document.getElementById('groups-empty').style.display=gs.length?'none':'block';
-  document.getElementById('groups-list').innerHTML=gs.map(g=>{
-    const cnt=DB.items.filter(i=>i.groupId===g.id&&i.workspace===CWS).length;
-    return `<div class="group-card fade-in">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="font-size:20px;">${g.icon}</span>
-          <div><div style="font-weight:600;font-size:14px;">${esc(g.name)}</div>
-          ${g.desc?`<div style="font-size:11px;color:var(--muted);">${esc(g.desc)}</div>`:''}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:7px;">
-          <span style="font-size:11px;color:var(--muted);">${cnt} ชิ้น</span>
-          <button onclick="openGroupModal('${g.id}')" class="btn btn-ghost" style="padding:5px 10px;font-size:11px;">✏️</button>
-          <button onclick="delGrp('${g.id}')" class="btn btn-danger" style="padding:5px 10px;font-size:11px;">🗑</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderGrpSel(){
-  const gs=wsGrps();
-  const opts=gs.map(g=>`<option value="${g.id}">${g.icon} ${esc(g.name)}</option>`).join('');
-  document.getElementById('i-grp').innerHTML=`<option value="">ไม่มีกลุ่ม</option>${opts}`;
-  document.getElementById('filter-group').innerHTML=`<option value="">ทุกกลุ่ม</option><option value="__none__">ไม่มีกลุ่ม</option>${opts}`;
-}
-
-// ============================================================
-// ITEMS
-// ============================================================
-function wsItems(){return DB.items.filter(i=>i.workspace===CWS);}
-
-function renderItems(){
-  const q=document.getElementById('search-input').value.toLowerCase();
-  const fg=document.getElementById('filter-group').value;
-  const so=document.getElementById('sort-sel').value;
-
-  let list=wsItems().filter(i=>{
-    const grpName=(DB.groups.find(g=>g.id===i.groupId)?.name)||'';
-    const mq=!q||[i.name,i.location,i.category||'',grpName].some(s=>s.toLowerCase().includes(q));
-    const mg=!fg||(fg==='__none__'?!i.groupId:i.groupId===fg);
-    return mq&&mg;
-  });
-
-  if(so==='old') list=[...list].reverse();
-  else if(so==='az') list=[...list].sort((a,b)=>a.name.localeCompare(b.name,'th'));
-  else if(so==='grp') list=[...list].sort((a,b)=>(a.groupId||'zzz').localeCompare(b.groupId||'zzz'));
-  else list=[...list].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-
-  document.getElementById('empty-st').style.display=list.length?'none':'block';
-  if(!list.length){document.getElementById('ungrouped-sec').innerHTML='';document.getElementById('grouped-sec').innerHTML='';return;}
-
-  const ungrouped=list.filter(i=>!i.groupId);
-  const byGrp={};
-  list.filter(i=>i.groupId).forEach(i=>{if(!byGrp[i.groupId])byGrp[i.groupId]=[];byGrp[i.groupId].push(i);});
-
-  document.getElementById('ungrouped-sec').innerHTML=ungrouped.length?`
-    <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;margin-bottom:8px;">ไม่มีกลุ่ม (${ungrouped.length})</div>
-    <div class="items-grid" style="margin-bottom:18px;">${ungrouped.map(iCard).join('')}</div>`:'';
-
-  document.getElementById('grouped-sec').innerHTML=Object.entries(byGrp).map(([gid,gi])=>{
-    const grp=DB.groups.find(g=>g.id===gid)||{name:'ไม่รู้จัก',icon:'❓'};
-    return `<div class="group-card" style="margin-bottom:14px;">
-      <div class="group-header" onclick="toggleGrp('${gid}')">
-        <div style="display:flex;align-items:center;gap:9px;">
-          <span style="font-size:19px;">${grp.icon}</span>
-          <span style="font-weight:700;font-size:14px;">${esc(grp.name)}</span>
-          <span style="font-size:11px;color:var(--muted);">${gi.length} ชิ้น</span>
-        </div>
-        <span id="cv-${gid}" style="color:var(--muted);font-size:13px;transition:transform 0.2s;">▼</span>
-      </div>
-      <div id="gb-${gid}" style="padding:12px 14px 14px;">
-        <div class="items-grid">${gi.map(iCard).join('')}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function toggleGrp(id){
-  const b=document.getElementById('gb-'+id),c=document.getElementById('cv-'+id);
-  const h=b.style.display==='none';
-  b.style.display=h?'':'none';
-  c.style.transform=h?'':'rotate(-90deg)';
-}
-
-function iCard(item){
-  const grp=item.groupId?DB.groups.find(g=>g.id===item.groupId):null;
-  return `<div class="card fade-in" style="padding:13px;cursor:pointer;" onclick="viewItem('${item.id}')">
-    ${item.image?`<img src="${item.image}" class="item-img" style="margin-bottom:9px;" loading="lazy" alt="${esc(item.name)}">`:`<div class="item-ph" style="margin-bottom:9px;">📦</div>`}
-    <div style="display:flex;align-items:start;justify-content:space-between;gap:5px;margin-bottom:5px;">
-      <span style="font-weight:600;font-size:12px;line-height:1.4;flex:1;">${esc(item.name)}</span>
-      ${item.category?`<span class="tag" style="flex-shrink:0;font-size:10px;">${esc(item.category)}</span>`:''}
-    </div>
-    ${grp?`<div style="margin-bottom:4px;"><span class="group-tag" style="font-size:10px;">${grp.icon} ${esc(grp.name)}</span></div>`:''}
-    <div class="loc-badge" style="margin-bottom:7px;"><span>📍</span><span style="font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(item.location)}</span></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:10px;color:var(--muted);">${fmtDate(item.createdAt)}</span>
-      <button class="btn btn-danger" style="padding:3px 9px;font-size:10px;" onclick="delItem(event,'${item.id}')">ลบ</button>
-    </div>
-  </div>`;
-}
-
-// ============================================================
-// ADD / EDIT
-// ============================================================
-function openAddModal(eid=null){
-  editId=eid; selFile=null; resetUpUI(); renderGrpSel();
-  document.getElementById('am-title').textContent=eid?'แก้ไขของ':'เพิ่มของใหม่';
-  if(eid){
-    const it=DB.items.find(i=>i.id===eid);
-    document.getElementById('i-name').value=it.name;
-    document.getElementById('i-loc').value=it.location;
-    document.getElementById('i-grp').value=it.groupId||'';
-    document.getElementById('i-cat').value=it.category||'';
-    document.getElementById('i-note').value=it.note||'';
-    if(it.image){document.getElementById('prev-img').src=it.image;document.getElementById('up-ph').style.display='none';document.getElementById('up-pv').style.display='block';}
-  } else {
-    ['i-name','i-loc','i-cat','i-note'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('i-grp').value='';
-  }
-  openModal('add-modal');
-  setTimeout(()=>document.getElementById('i-name').focus(),300);
-}
-
-async function saveItem(){
-  const name=document.getElementById('i-name').value.trim();
-  const loc=document.getElementById('i-loc').value.trim();
-  if(!name){shk('i-name');toast('กรุณาใส่ชื่อของ','warn');return;}
-  if(!loc){shk('i-loc');toast('กรุณาใส่ตำแหน่ง','warn');return;}
-
-  const btn=document.getElementById('save-btn');
-  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> กำลังบันทึก...';
-
-  let img=editId?(DB.items.find(i=>i.id===editId)?.image||''):'';
-  if(selFile) img=await uploadImg(selFile)||img;
-
-  const data={name,location:loc,image:img,groupId:document.getElementById('i-grp').value,category:document.getElementById('i-cat').value.trim(),note:document.getElementById('i-note').value.trim()};
-
-  if(editId){Object.assign(DB.items.find(i=>i.id===editId),data);}
-  else{
-    const it={id:Date.now().toString(),...data,workspace:CWS,createdAt:new Date().toISOString()};
-    DB.items.unshift(it);syncToSheet(it);
-  }
-  save();renderItems();closeModal('add-modal');
-  toast(`${editId?'แก้ไข':'บันทึก'} "${name}" ✓`);
-  editId=null;btn.disabled=false;btn.innerHTML='💾 บันทึก';
-}
-
-function delItem(e,id){
-  e.stopPropagation();
-  if(!confirm('ลบรายการนี้?')) return;
-  DB.items=DB.items.filter(i=>i.id!==id);
-  save();delFromSheet(id);renderItems();toast('ลบแล้ว');
-}
-
-// ============================================================
-// VIEW
-// ============================================================
-function viewItem(id){
-  const it=DB.items.find(i=>i.id===id);if(!it) return;
-  viewId=id;
-  document.getElementById('v-name').textContent=it.name;
-  document.getElementById('v-loc').textContent=it.location;
-  const hi=!!it.image;
-  document.getElementById('v-img').style.display=hi?'':'none';
-  document.getElementById('v-ph').style.display=hi?'none':'';
-  if(hi) document.getElementById('v-img').src=it.image;
-  const grp=it.groupId?DB.groups.find(g=>g.id===it.groupId):null;
-  document.getElementById('v-grp-r').style.display=grp?'':'none';
-  if(grp) document.getElementById('v-grp').textContent=`${grp.icon} ${grp.name}`;
-  document.getElementById('v-cat-r').style.display=it.category?'':'none';
-  if(it.category) document.getElementById('v-cat').textContent=it.category;
-  document.getElementById('v-note-r').style.display=it.note?'':'none';
-  if(it.note) document.getElementById('v-note').textContent=it.note;
-  document.getElementById('v-date').textContent=`บันทึกเมื่อ ${fmtDate(it.createdAt)}`;
-  openModal('view-modal');
-}
-function editFromView(){closeModal('view-modal');setTimeout(()=>openAddModal(viewId),180);}
-function delFromView(){
-  if(!confirm('ลบรายการนี้?')) return;
-  DB.items=DB.items.filter(i=>i.id!==viewId);
-  save();delFromSheet(viewId);closeModal('view-modal');renderItems();toast('ลบแล้ว');
-}
-
-// ============================================================
-// CONFIG
-// ============================================================
-function loadCfgInputs(){
-  const c=DB.config;
-  document.getElementById('cl-name').value=c.cloudName||'';
-  document.getElementById('cl-preset').value=c.uploadPreset||'';
-  document.getElementById('gs-url').value=c.sheetUrl||'';
-  updDots();
-}
-
-function updDots(){
-  const c=DB.config;
-  document.getElementById('cl-dot').style.background=(c.cloudName&&c.uploadPreset)?'var(--success)':'var(--border)';
-  document.getElementById('gs-dot').style.background=c.sheetUrl?'var(--success)':'var(--border)';
-}
-
-function applyOneline(){
-  const v=document.getElementById('oneline-cfg').value.trim();
-  const p=v.split('|').map(s=>s.trim());
-  if(p.length<3||!p[2].startsWith('http')){toast('รูปแบบไม่ถูกต้อง — ต้องมี 3 ส่วนคั่น |','warn');return;}
-  DB.config={cloudName:p[0],uploadPreset:p[1],sheetUrl:p[2]};
-  save();loadCfgInputs();
-  document.getElementById('oneline-st').textContent=`✓ ตั้งค่าสำเร็จ: ${p[0]} | preset: ${p[1]}`;
-  toast('One-line Config สำเร็จ ✓');
-}
-
-function saveCloud(){
-  const cn=document.getElementById('cl-name').value.trim();
-  const up=document.getElementById('cl-preset').value.trim();
-  if(!cn||!up){toast('กรุณาใส่ทั้งสองช่อง','warn');return;}
-  DB.config.cloudName=cn;DB.config.uploadPreset=up;
-  save();updDots();document.getElementById('cl-st').textContent='✓ บันทึกแล้ว';
-  toast('บันทึก Cloudinary ✓');
-}
-
-function saveSheet(){
-  const url=document.getElementById('gs-url').value.trim();
-  if(!url){toast('กรุณาใส่ URL','warn');return;}
-  DB.config.sheetUrl=url;save();updDots();
-  document.getElementById('gs-st').textContent='✓ บันทึกแล้ว';
-  toast('บันทึก Google Sheet ✓');
-}
-
-// ============================================================
-// IMAGE UPLOAD
-// ============================================================
-async function uploadImg(file){
-  const {cloudName:cn,uploadPreset:up}=DB.config;
-  if(!cn||!up) return await b64(file);
-  document.getElementById('up-bar').style.display='block';
-  document.getElementById('up-st').style.display='block';
-  document.getElementById('up-st').textContent='กำลังอัพโหลด...';
-  const fd=new FormData();fd.append('file',file);fd.append('upload_preset',up);
-  return new Promise(res=>{
-    const x=new XMLHttpRequest();
-    x.open('POST',`https://api.cloudinary.com/v1_1/${cn}/image/upload`);
-    x.upload.onprogress=e=>{if(e.lengthComputable)document.getElementById('up-fill').style.width=Math.round(e.loaded/e.total*100)+'%';};
-    x.onload=()=>{
-      if(x.status===200){const r=JSON.parse(x.responseText);document.getElementById('up-st').textContent='✓ อัพโหลดสำเร็จ';document.getElementById('up-st').style.color='var(--success)';res(r.secure_url);}
-      else{document.getElementById('up-st').textContent='⚠️ error — ใช้ Base64 แทน';b64(file).then(res);}
-    };
-    x.onerror=()=>b64(file).then(res);
-    x.send(fd);
-  });
-}
-function b64(file){return new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(file);});}
-function setPreview(file){if(!file)return;selFile=file;const fr=new FileReader();fr.onload=e=>{document.getElementById('prev-img').src=e.target.result;document.getElementById('up-ph').style.display='none';document.getElementById('up-pv').style.display='block';document.getElementById('up-fill').style.width='0%';document.getElementById('up-bar').style.display='none';document.getElementById('up-st').style.display='none';};fr.readAsDataURL(file);}
-function handleDrop(e){e.preventDefault();document.getElementById('upzone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f?.type.startsWith('image/'))setPreview(f);}
-function resetUpUI(){selFile=null;document.getElementById('file-inp').value='';document.getElementById('up-ph').style.display='block';document.getElementById('up-pv').style.display='none';document.getElementById('up-fill').style.width='0%';document.getElementById('up-bar').style.display='none';document.getElementById('up-st').style.display='none';document.getElementById('up-st').style.color='var(--accent)';}
-
-// ============================================================
-// SHEET SYNC
-// ============================================================
-async function syncToSheet(item){
-  const url=DB.config.sheetUrl;if(!url)return;
-  try{const p=new URLSearchParams({action:'add',id:item.id,name:item.name,location:item.location,groupId:item.groupId||'',category:item.category||'',note:item.note||'',image:item.image||'',workspace:item.workspace,createdAt:item.createdAt});await fetch(`${url}?${p}`,{method:'GET',mode:'no-cors'});}catch(e){}
-}
-async function delFromSheet(id){
-  const url=DB.config.sheetUrl;if(!url)return;
-  try{await fetch(`${url}?action=delete&id=${id}`,{method:'GET',mode:'no-cors'});}catch(e){}
-}
-async function loadFromSheet(){
-  const url=DB.config.sheetUrl;
-  if(!url){toast('ยังไม่ได้ตั้งค่า Sheet URL','warn');switchView('config');return;}
-  const btn=document.getElementById('sync-btn');
-  btn.textContent='⏳ ซิงค์...';btn.disabled=true;
-  toast('กำลังซิงค์...','warn');
-  try{
-    const res=await fetch(`${url}?action=get&t=${Date.now()}`,{redirect:'follow'});
-    const text=await res.text();
-    let data;
-    try{data=JSON.parse(text);}catch(e){toast('❌ Sheet ตอบกลับไม่ถูกต้อง','warn');btn.textContent='🔄 ซิงค์';btn.disabled=false;return;}
-    const sheetItems=(data.items||[]).filter(i=>i.workspace===CWS||!i.workspace);
-    const sheetIds=new Set(sheetItems.map(i=>String(i.id)));
-    const localOnly=wsItems().filter(i=>!sheetIds.has(String(i.id)));
-    for(const it of localOnly) await syncToSheet(it);
-    const others=DB.items.filter(i=>i.workspace!==CWS);
-    const merged=[...sheetItems.map(i=>({...i,workspace:CWS})),...localOnly];
-    merged.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-    DB.items=[...others,...merged];
-    save();renderItems();
-    toast(`✓ ซิงค์สำเร็จ ${merged.length} รายการ (ใหม่ ${localOnly.length})`);
-  }catch(e){toast('❌ เชื่อมต่อ Sheet ไม่ได้','warn');}
-  btn.textContent='🔄 ซิงค์';btn.disabled=false;
-}
-
-// ============================================================
-// UTILS
-// ============================================================
-function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')['add-modal','grp-modal','ws-modal','view-modal'].forEach(closeModal);});
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function fmtDate(iso){try{return new Date(iso).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});}catch(e){return '';}}
-function shk(id){const el=document.getElementById(id);el.style.borderColor='var(--accent2)';setTimeout(()=>el.style.borderColor='',1500);}
-let tTimer;
-function toast(msg,type='success'){
-  const t=document.getElementById('toast');
-  const c={success:'var(--success)',warn:'var(--accent)',error:'var(--accent2)'};
-  const ic={success:'✓',warn:'⚠️',error:'✕'};
-  t.style.borderColor=c[type];t.style.color=c[type];
-  document.getElementById('t-icon').textContent=ic[type]||'✓';
-  document.getElementById('t-msg').textContent=msg;
-  t.classList.add('show');clearTimeout(tTimer);tTimer=setTimeout(()=>t.classList.remove('show'),3500);
-}
-</script>
 </body>
 </html>
