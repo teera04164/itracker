@@ -7,6 +7,11 @@ function loadCfgInputs() {
   document.getElementById('cl-name').value   = config.cloudName    || '';
   document.getElementById('cl-preset').value = config.uploadPreset || '';
   document.getElementById('gs-url').value    = config.sheetUrl     || '';
+
+  // Pre-fill One-line Config ด้วยค่าปัจจุบัน
+  const oneline = [config.cloudName || '', config.uploadPreset || '', config.sheetUrl || ''].join(' | ');
+  document.getElementById('oneline-cfg').value = oneline;
+
   updDots();
 }
 
@@ -33,6 +38,29 @@ function applyOneline() {
   toast('One-line Config สำเร็จ ✓');
 }
 
+function copyOneline() {
+  const config = DB.config;
+  const oneline = [config.cloudName || '', config.uploadPreset || '', config.sheetUrl || ''].join('|');
+
+  if (!config.cloudName && !config.uploadPreset && !config.sheetUrl) {
+    toast('ยังไม่มีค่าที่จะ copy', 'warn');
+    return;
+  }
+
+  navigator.clipboard.writeText(oneline).then(() => {
+    toast('คัดลอก One-line Config แล้ว ✓');
+    const btn = document.getElementById('copy-oneline-btn');
+    if (btn) { btn.textContent = '✅ copied!'; setTimeout(() => { btn.textContent = '📋 Copy'; }, 1500); }
+  }).catch(() => {
+    // fallback สำหรับ browser ที่ไม่ support clipboard API
+    const el = document.getElementById('oneline-cfg');
+    el.value = oneline;
+    el.select();
+    document.execCommand('copy');
+    toast('คัดลอก One-line Config แล้ว ✓');
+  });
+}
+
 function saveCloud() {
   const cloudName    = document.getElementById('cl-name').value.trim();
   const uploadPreset = document.getElementById('cl-preset').value.trim();
@@ -41,7 +69,7 @@ function saveCloud() {
   DB.config.cloudName    = cloudName;
   DB.config.uploadPreset = uploadPreset;
   save();
-  updDots();
+  loadCfgInputs();
   document.getElementById('cl-st').textContent = '✓ บันทึกแล้ว';
   toast('บันทึก Cloudinary ✓');
 }
@@ -52,7 +80,7 @@ function saveSheet() {
 
   DB.config.sheetUrl = url;
   save();
-  updDots();
+  loadCfgInputs();
   document.getElementById('gs-st').textContent = '✓ บันทึกแล้ว';
   toast('บันทึก Google Sheet ✓');
 }

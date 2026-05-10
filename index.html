@@ -133,9 +133,11 @@
       <div style="display:flex;gap:8px;">
         <input type="text" class="input-field" id="oneline-cfg"
           placeholder="my-cloud|my_preset|https://script.google.com/macros/s/..." style="font-size:12px;">
+        <button onclick="copyOneline()" id="copy-oneline-btn" class="btn btn-ghost" style="white-space:nowrap;padding:9px 12px;" title="คัดลอก config">📋 Copy</button>
         <button onclick="applyOneline()" class="btn btn-primary" style="white-space:nowrap;padding:9px 14px;">ใช้งาน</button>
       </div>
       <p id="oneline-st" style="font-size:11px;margin-top:5px;color:var(--success);"></p>
+
     </div>
 
     <!-- Cloudinary -->
