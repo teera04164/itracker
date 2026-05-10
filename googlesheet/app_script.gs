@@ -13,6 +13,9 @@ function bootstrapSheet(name, headers) {
   let sheet = ss.getSheetByName(name);
   if (!sheet) {
     sheet = ss.insertSheet(name);
+  }
+  // เพิ่ม header ถ้า sheet ยังไม่มีข้อมูลเลย (ว่างหรือถูกลบ header ออก)
+  if (sheet.getLastRow() === 0) {
     sheet.appendRow(headers);
     sheet.getRange(1, 1, 1, headers.length)
       .setFontWeight('bold').setBackground('#f5a623').setFontColor('#ffffff');
@@ -20,6 +23,7 @@ function bootstrapSheet(name, headers) {
   }
   return sheet;
 }
+
 
 function getItemsSheet() {
   return bootstrapSheet(S_ITEMS,
